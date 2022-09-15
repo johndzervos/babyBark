@@ -5,6 +5,8 @@ import os
 import asyncio
 import time
 
+from gtts import gTTS
+
 def fire_and_forget(f):
   def wrapped(*args, **kwargs):
     return asyncio.get_event_loop().run_in_executor(None, f, *args, *kwargs)
@@ -17,6 +19,14 @@ def play_lullaby():
   # p.play()
   os.system("mpg123 " + audio)
 
+def speak_transcript(transcript):
+  # Generate the audio using the gTTS engine. We are passing the message and the language
+  audio = gTTS(text=transcript, lang='en')
+  # Save the audio in MP3 format
+  audio.save("message.mp3")
+  # Play the MP3 file
+  os.system("mpg123 message.mp3")
+
 r = s_r.Recognizer()
 my_mic = s_r.Microphone()
 while (1):
@@ -28,13 +38,17 @@ while (1):
     # with open("audio_file.wav", "wb") as file:
     #   file.write(audio.get_wav_data())
   try: 
+    # transcript = r.recognize_google(audio, language="el-GR")
     transcript = r.recognize_google(audio)
   except s_r.UnknownValueError:
     transcript = "Unable to recognize speech"
 
   print(transcript) #to print voice into text
+  speak_transcript(transcript)
 
   if 'lullaby' in transcript:
     play_lullaby()
+  if 'stop' in transcript:
+    # Kill player
   if 'exit' in transcript or 'quit' in transcript:
     exit()
